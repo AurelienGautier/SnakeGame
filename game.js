@@ -2,8 +2,8 @@ const canvas = document.getElementById('canvas');
 const canvasContext = canvas.getContext('2d');
 const scoreDiv = document.getElementById('score');
 
-let mapWidth = 20;
-let mapHeight = 20;
+let mapWidth = 25;
+let mapHeight = 25;
 let tileSize = 20;
 let score = 0;
 
@@ -35,8 +35,35 @@ class Snake {
 
     render() {
         for (const element of this.body) {
-            createRect(element.x, element.y, tileSize - 2, tileSize - 2, 'green');
+            createRect(element.x + 0.5, element.y + 0.5, tileSize - 1, tileSize - 1, '#00FF00');
         }
+
+        // Draw eyes on the head of the snake
+        let head = this.body[this.body.length - 1];
+        let eyeSize = tileSize / 5;
+        let eyePosX, eyePosY;
+
+        switch (this.direction) {
+            case Direction.Up:
+                eyePosX = head.x + tileSize / 4;
+                eyePosY = head.y;
+                break;
+            case Direction.Down:
+                eyePosX = head.x + tileSize / 4;
+                eyePosY = head.y + tileSize / 2;
+                break;
+            case Direction.Left:
+                eyePosX = head.x;
+                eyePosY = head.y + tileSize / 4;
+                break;
+            case Direction.Right:
+                eyePosX = head.x + tileSize / 2;
+                eyePosY = head.y + tileSize / 4;
+                break;
+        }
+
+        createRect(eyePosX, eyePosY, eyeSize, eyeSize, 'white'); // Left eye
+        createRect(eyePosX + tileSize / 4, eyePosY, eyeSize, eyeSize, 'white'); // Right eye
     }
     
     move() {
@@ -45,26 +72,26 @@ class Snake {
         switch (this.direction) {
             case Direction.Up:
                 newSquareBody = {
-                    x: this.body[this.body.length - 1].x, 
-                    y: this.body[this.body.length - 1].y - tileSize
+                    x: this.x, 
+                    y: this.y - tileSize
                 };
                 break;
             case Direction.Down:
                 newSquareBody = {
-                    x: this.body[this.body.length - 1].x, 
-                    y: this.body[this.body.length - 1].y + tileSize
+                    x: this.x, 
+                    y: this.y + tileSize
                 };
                 break;
             case Direction.Left:
                 newSquareBody = {
-                    x: this.body[this.body.length - 1].x - tileSize, 
-                    y: this.body[this.body.length - 1].y
+                    x: this.x - tileSize, 
+                    y: this.y
                 };
                 break;
             case Direction.Right:
                 newSquareBody = {
-                    x: this.body[this.body.length - 1].x + tileSize, 
-                    y: this.body[this.body.length - 1].y
+                    x: this.x + tileSize, 
+                    y: this.y
                 };
                 break;
         }
@@ -109,7 +136,7 @@ class Apple {
     }
 
     render() {
-        createRect(this.x, this.y, tileSize - 2, tileSize - 2, 'red');
+        createRect(this.x + 0.5, this.y + 0.5, tileSize - 1, tileSize - 1, 'red');
     }
 };
 
@@ -118,13 +145,13 @@ window.onload = () => {
 }
 
 window.addEventListener('keydown', (event) => {
-    if(event.key == 'ArrowUp' && snake.direction !== Direction.Down) 
+    if((event.key == 'ArrowUp' || event.key == 'z') && snake.direction !== Direction.Down) 
         snake.direction = Direction.Up;
-    else if(event.key == 'ArrowDown' && snake.direction !== Direction.Up)
+    else if((event.key == 'ArrowDown' || event.key == 's') && snake.direction !== Direction.Up)
         snake.direction = Direction.Down;
-    else if(event.key == 'ArrowLeft' && snake.direction !== Direction.Right)
+    else if((event.key == 'ArrowLeft' || event.key == 'q') && snake.direction !== Direction.Right)
         snake.direction = Direction.Left;
-    else if(event.key == 'ArrowRight' && snake.direction !== Direction.Left)
+    else if((event.key == 'ArrowRight' || event.key == 'd') && snake.direction !== Direction.Left)
         snake.direction = Direction.Right;
 });
 
@@ -146,15 +173,24 @@ function render() {
 
     for (let i = 0; i < mapWidth; i++) {
         for (let j = 0; j < mapHeight; j++) {
-            createRect(i * tileSize, j * tileSize, tileSize - 2, tileSize - 2, 'black');
+            let color = '#393939';
+
+            if((i + j) % 2 == 0)
+                color = '#2E2E2E';
+
+            createRect(i * tileSize, j * tileSize, tileSize, tileSize, color);
         }
     }
 
     snake.render();
     apple.render();
 
-    scoreDiv.innerHTML = score;
+    scoreDiv.innerHTML = "Score : " + score;
 }
 
-let snake = new Snake((mapWidth * tileSize) / 2, (mapHeight * tileSize) / 2);
+let snake = new Snake(
+    Math.floor((mapWidth / 2)) * tileSize, 
+    Math.floor((mapHeight / 2)) * tileSize
+);
+    
 let apple = new Apple();
